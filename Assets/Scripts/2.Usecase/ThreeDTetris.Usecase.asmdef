@@ -1,6 +1,6 @@
 {
     "name": "ThreeDTetris.Usecase",
-    "rootNamespace": "",
+    "rootNamespace": "ThreeDTetris.Usecase",
     "references": [
         "GUID:82c3bf3f2b3fe3744a71987493c8154a"
     ],
