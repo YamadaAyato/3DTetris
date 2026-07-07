@@ -6,7 +6,7 @@ namespace ThreeDTetris.View
     /// <summary>
     ///     Unity InputSystem の ActionMap名と Action名を管理し、ゲーム内操作へ変換する。
     /// </summary>
-    internal static class UnityInputActionMapNames
+    internal static class InputActionMapNames
     {
         public const string GAMEPLAY_MAP_NAME = "Gameplay";
 

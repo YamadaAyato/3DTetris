@@ -3,7 +3,8 @@
     "rootNamespace": "ThreeDTetris.View",
     "references": [
         "GUID:82c3bf3f2b3fe3744a71987493c8154a",
-        "GUID:acedfa200c1405f4283e4f1e2ddf32a4"
+        "GUID:acedfa200c1405f4283e4f1e2ddf32a4",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
