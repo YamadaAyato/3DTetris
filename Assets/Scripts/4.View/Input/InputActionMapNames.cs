@@ -21,7 +21,7 @@ namespace ThreeDTetris.View
         public const string PAUSE = "Pause";
 
         /// <summary>
-        ///     Unity InputSystem の Action名から対応するゲーム内操作を取得する。
+        ///     InputSystem の Action名から対応するゲーム内操作を取得する。
         /// </summary>
         /// <param name="actionName"> Action名 </param>
         /// <param name="playerCommand"> 取得されたゲーム内操作 </param>

@@ -1,3 +1,5 @@
+using System;
+
 namespace ThreeDTetris.Model
 {
     /// <summary>
@@ -12,7 +14,7 @@ namespace ThreeDTetris.Model
             int originY,
             PieceRotation rotation)
         {
-            Definition = definition;
+            Definition = definition ?? throw new ArgumentNullException(nameof(definition));
             OriginFaceId = originFaceId;
             OriginX = originX;
             OriginY = originY;
@@ -37,10 +39,10 @@ namespace ThreeDTetris.Model
         /// <summary>
         ///    基準位置を設定する。
         /// </summary>
-        /// <param name="originFaceId"> 基準位置が存在する面のID。 </param>
-        /// <param name="originX"> 基準位置のX座標。 </param>
-        /// <param name="originY"> 基準位置のY座標。 </param>
-        public void SetOrigin(BoardFaceId originFaceId, int originX, int originY)
+        /// <param name="originFaceId"> 基準位置が存在する面のID </param>
+        /// <param name="originX"> 基準位置のX座標 </param>
+        /// <param name="originY"> 基準位置のY座標 </param>
+        public void MoveTo(BoardFaceId originFaceId, int originX, int originY)
         {
             OriginFaceId = originFaceId;
             OriginX = originX;
@@ -51,7 +53,7 @@ namespace ThreeDTetris.Model
         ///     ミノの回転状態を設定する。
         /// </summary>
         /// <param name="rotation"> ミノの回転状態。 </param>
-        public void SetRotation(PieceRotation rotation)
+        public void RotationTo(PieceRotation rotation)
         {
             Rotation = rotation;
         }
