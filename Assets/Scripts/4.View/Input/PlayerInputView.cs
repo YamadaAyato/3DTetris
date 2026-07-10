@@ -33,7 +33,7 @@ namespace ThreeDTetris.View
 
         private void ActionTriggered(InputAction.CallbackContext context)
         {
-            if (InputActionMapNames.TryGetCommand(context.action.name, out PlayerCommand command))
+            if (!InputActionMapNames.TryGetCommand(context.action.name, out PlayerCommand command))
             {
                 return;
             }
