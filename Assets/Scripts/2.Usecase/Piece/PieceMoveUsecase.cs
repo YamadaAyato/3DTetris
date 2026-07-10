@@ -1,3 +1,4 @@
+using System;
 using ThreeDTetris.Model;
 
 namespace ThreeDTetris.Usecase
@@ -9,10 +10,10 @@ namespace ThreeDTetris.Usecase
     {
         public PieceMoveUsecase(
             IBoardTopology boardTopology,
-            PiecePlecementValidator placementValidator)
+            PiecePlacementValidator placementValidator)
         {
-            _boardTopology = boardTopology ?? throw new System.ArgumentNullException(nameof(boardTopology));
-            _placementValidator = placementValidator ?? throw new System.ArgumentNullException(nameof(placementValidator));
+            _boardTopology = boardTopology ?? throw new ArgumentNullException(nameof(boardTopology));
+            _placementValidator = placementValidator ?? throw new ArgumentNullException(nameof(placementValidator));
         }
 
         /// <summary>
@@ -30,7 +31,7 @@ namespace ThreeDTetris.Usecase
         public bool MoveRight(ActivePiece activePiece) => Move(activePiece, PieceMoveDirection.Right);
 
         private readonly IBoardTopology _boardTopology;
-        private readonly PiecePlecementValidator _placementValidator;
+        private readonly PiecePlacementValidator _placementValidator;
 
         /// <summary>
         ///     操作中ミノの現在の基準位置を盤面位置として生成する。
@@ -57,7 +58,7 @@ namespace ThreeDTetris.Usecase
         {
             if (activePiece == null)
             {
-                throw new System.ArgumentNullException(nameof(activePiece));
+                throw new ArgumentNullException(nameof(activePiece));
             }
 
             var originPosition = CreateOriginPosition(activePiece);
@@ -79,7 +80,7 @@ namespace ThreeDTetris.Usecase
             {
                 PieceMoveDirection.Left => _boardTopology.GetLeft(origin),
                 PieceMoveDirection.Right => _boardTopology.GetRight(origin),
-                _ => throw new System.ArgumentOutOfRangeException(nameof(direction), direction, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
             };
         }
 
@@ -100,7 +101,7 @@ namespace ThreeDTetris.Usecase
                 activePiece.Rotation);
 
             // 移動先に置けるかどうかを確認する。
-            if (!_placementValidator.CanPlace(candidatePosition))
+            if (!_placementValidator.CanOccupy(candidatePosition))
             {
                 return false;
             }

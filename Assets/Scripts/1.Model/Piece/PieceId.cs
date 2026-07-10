@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace ThreeDTetris.Model
 {
@@ -10,7 +9,7 @@ namespace ThreeDTetris.Model
     {
         public PieceId(string value)
         {
-            if(string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(value))
             {
                 throw new ArgumentException("ミノIDが空です。", nameof(value));
             }

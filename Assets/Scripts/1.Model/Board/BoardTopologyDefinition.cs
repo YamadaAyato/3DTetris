@@ -1,7 +1,5 @@
-using System.Collections.Generic;
-using UnityEngine;
 using System;
-using UnityEditor;
+using System.Collections.Generic;
 
 namespace ThreeDTetris.Model
 {
@@ -15,17 +13,17 @@ namespace ThreeDTetris.Model
             IReadOnlyCollection<BoardFaceId> faceIds,
             IReadOnlyDictionary<BoardFaceId, BoardHorizontalNeighbors> neighborsByFaceId)
         {
-            if(faceIds == null)
+            if (faceIds == null)
             {
                 throw new ArgumentNullException(nameof(faceIds));
             }
 
-            if(neighborsByFaceId == null)
+            if (neighborsByFaceId == null)
             {
                 throw new ArgumentNullException(nameof(neighborsByFaceId));
             }
 
-            if(faceIds.Count == 0)
+            if (faceIds.Count == 0)
             {
                 throw new ArgumentException("面IDが存在しません。", nameof(faceIds));
             }
@@ -57,7 +55,7 @@ namespace ThreeDTetris.Model
         /// <returns> 水平方向の隣接関係 </returns>
         public BoardHorizontalNeighbors GetHorizontalNeighbors(BoardFaceId faceId)
         {
-            if(_neighborsByFaceId.TryGetValue(faceId,out BoardHorizontalNeighbors neighbors))
+            if (_neighborsByFaceId.TryGetValue(faceId, out BoardHorizontalNeighbors neighbors))
             {
                 return neighbors;
             }
@@ -66,7 +64,7 @@ namespace ThreeDTetris.Model
         }
 
         private readonly HashSet<BoardFaceId> _faceIds;
-        private readonly Dictionary<BoardFaceId,BoardHorizontalNeighbors> _neighborsByFaceId;
+        private readonly Dictionary<BoardFaceId, BoardHorizontalNeighbors> _neighborsByFaceId;
 
         /// <summary>
         ///     存在するかのチェック。
@@ -74,9 +72,9 @@ namespace ThreeDTetris.Model
         /// <exception cref="InvalidOperationException"></exception>
         private void Validate()
         {
-            foreach(var faceId in _faceIds)
+            foreach (var faceId in _faceIds)
             {
-                if(!_neighborsByFaceId.ContainsKey(faceId))
+                if (!_neighborsByFaceId.ContainsKey(faceId))
                 {
                     throw new InvalidOperationException($"面ID {faceId} の接続情報が存在しません。");
                 }

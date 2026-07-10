@@ -8,7 +8,7 @@ namespace ThreeDTetris.Usecase
     /// </summary>
     public class PieceDropUsecase
     {
-        public PieceDropUsecase(PiecePlecementValidator placementValidator)
+        public PieceDropUsecase(PiecePlacementValidator placementValidator)
         {
             _placementValidator = placementValidator ?? throw new ArgumentNullException(nameof(placementValidator));
         }
@@ -28,10 +28,10 @@ namespace ThreeDTetris.Usecase
             // 下方向に1ステップ移動させるため、Y座標を1減少させる。
             int candidateY = activePiece.OriginY - 1;
 
-            ActivePiece candidatePiece = CreateCandiateWithY(activePiece, candidateY);
+            ActivePiece candidatePiece = CreateCandidateWithY(activePiece, candidateY);
 
             // 移動後の状態で配置可能かどうかを検証する。
-            if (!_placementValidator.CanPlace(candidatePiece))
+            if (!_placementValidator.CanOccupy(candidatePiece))
             {
                 return false;
             }
@@ -46,7 +46,7 @@ namespace ThreeDTetris.Usecase
         /// </summary>
         /// <param name="activePiece"> 操作中のピース </param>
         /// <returns> 最終的な落下量 </returns>
-        public int DropToBottom(ActivePiece activePiece)
+        public int HardDrop(ActivePiece activePiece)
         {
             if (activePiece == null)
             {
@@ -63,7 +63,7 @@ namespace ThreeDTetris.Usecase
             return dropCount;
         }
 
-        private readonly PiecePlecementValidator _placementValidator;
+        private readonly PiecePlacementValidator _placementValidator;
 
         /// <summary>
         ///     指定されたY座標を使用して、操作中のピースの候補を作成する。
@@ -71,7 +71,7 @@ namespace ThreeDTetris.Usecase
         /// <param name="activePiece"> 操作中のピース </param>
         /// <param name="originY"> 使用するY座標 </param>
         /// <returns> 指定されたY座標を使用した操作中のピースの候補 </returns>
-        private static ActivePiece CreateCandiateWithY(ActivePiece activePiece, int originY)
+        private static ActivePiece CreateCandidateWithY(ActivePiece activePiece, int originY)
         {
             return new ActivePiece(
                 activePiece.Definition,

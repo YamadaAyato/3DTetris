@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace ThreeDTetris.Model
 {
@@ -26,8 +25,8 @@ namespace ThreeDTetris.Model
 
         public bool Equals(BoardCellPosition other)
         {
-            return FaceId.Equals(other.FaceId) && 
-                X == other.X && 
+            return FaceId.Equals(other.FaceId) &&
+                X == other.X &&
                 Y == other.Y;
         }
 

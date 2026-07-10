@@ -1,4 +1,3 @@
-using UnityEngine;
 using System;
 
 namespace ThreeDTetris.Model
@@ -8,14 +7,14 @@ namespace ThreeDTetris.Model
     /// </summary>
     public readonly struct BoardDimensions
     {
-        public BoardDimensions(int faceWidth,int height)
+        public BoardDimensions(int faceWidth, int height)
         {
-            if(faceWidth <= 0)
+            if (faceWidth <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(faceWidth), "面の横幅は1以上である必要があります。");
             }
 
-            if(height <= 0)
+            if (height <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(height), "盤面の高さは1以上である必要があります。");
             }
@@ -36,7 +35,7 @@ namespace ThreeDTetris.Model
         /// <param name="x"> 指定したx座標 </param>
         /// <param name="y"> 指定したy座標 </param>
         /// <returns> 寸法内におさまっているか </returns>
-        public bool Contains(int x,int y)
+        public bool Contains(int x, int y)
         {
             return x >= 0 &&
                 x < FaceWidth &&

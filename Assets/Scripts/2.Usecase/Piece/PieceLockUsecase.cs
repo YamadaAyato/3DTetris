@@ -4,7 +4,7 @@ using ThreeDTetris.Model;
 namespace ThreeDTetris.Usecase
 {
     /// <summary>
-    ///    操作中のピースをボードに配置するユースケース。
+    ///    操作中のピースを固定済みのブロックとして盤面に登録するユースケース。
     /// </summary>
     public class PieceLockUsecase
     {
@@ -15,10 +15,10 @@ namespace ThreeDTetris.Usecase
         }
 
         /// <summary>
-        ///     操作中のピースをボードに配置する。
+        ///     操作中のピースをボードの現在位置に固定する。
         /// </summary>
         /// <param name="activePiece"> 配置するアクティブなピース </param>
-        /// <returns> 配置に成功した場合はtrue、失敗した場合はfalse /returns>
+        /// <returns> 配置に成功した場合はtrue、失敗した場合はfalse </returns>
         public bool Lock(ActivePiece activePiece)
         {
             if (activePiece == null)
@@ -30,7 +30,7 @@ namespace ThreeDTetris.Usecase
             var positions = _piecePositionResolver.Resolve(activePiece);
 
             // ブロックを配置できるかどうかを確認する。
-            if (!_boardModel.CanPlace(positions))
+            if (!_boardModel.CanPlaceBlocks(positions))
             {
                 return false;
             }

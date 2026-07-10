@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace ThreeDTetris.Model
 {
     /// <summary>
@@ -18,7 +16,7 @@ namespace ThreeDTetris.Model
         BoardCellPosition GetLeft(BoardCellPosition position);
 
         /// <summary>
-        ///     指定位置の左隣の位置を取得する。
+        ///     指定位置の右隣の位置を取得する。
         /// </summary>
         /// <param name="position"> 確認したい位置 </param>
         /// <returns> 取得した位置 </returns>
