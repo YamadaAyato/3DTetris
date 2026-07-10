@@ -64,11 +64,6 @@ namespace ThreeDTetris.Model
             {
                 throw new ArgumentOutOfRangeException(nameof(position), $"X座標 {position.X} は盤面幅の範囲外です。");
             }
-
-            if (position.Y < 0 || position.Y >= Dimensions.FaceHeight)
-            {
-                throw new ArgumentOutOfRangeException(nameof(position), $"Y座標 {position.Y} は盤面高さの範囲外です。");
-            }
         }
     }
 }

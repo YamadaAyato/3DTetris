@@ -30,12 +30,70 @@ namespace ThreeDTetris.Model
         }
 
         /// <summary>
+        ///     指定された盤面位置一覧にブロックを占有できるか判定する。
+        /// </summary>
+        /// <param name="positions"> 確認対象の盤面位置一覧 </param>
+        /// <returns> ブロックを占有できるか </returns>
+        public bool CanOccupy(IReadOnlyList<BoardCellPosition> positions)
+        {
+            if (positions == null)
+            {
+                throw new ArgumentNullException(nameof(positions));
+            }
+
+            HashSet<BoardCellPosition> checkedPositions = new();
+
+            for (int i = 0; i < positions.Count; i++)
+            {
+                BoardCellPosition position = positions[i];
+
+                // 存在しない面IDや範囲外の座標の場合は占有できない。
+                if (!_boardTopology.ContainsFace(position.FaceId))
+                {
+                    return false;
+                }
+
+                if (position.X < 0 || position.X >= Dimensions.FaceWidth)
+                {
+                    return false;
+                }
+
+                // Y座標が負の値の場合は占有できない。
+                if (position.Y < 0)
+                {
+                    return false;
+                }
+
+                // 同じミノ内で同じ座標が重複している場合も占有できない。
+                if (!checkedPositions.Add(position))
+                {
+                    return false;
+                }
+
+                // 盤面より上にあるセルは、固定済みブロックとの衝突判定を行わない。
+                // 上に積んでゲームオーバーの判定は別の箇所で行う。
+                if (position.Y >= Dimensions.FaceHeight)
+                {
+                    continue;
+                }
+
+                // すでに固定済みブロックがある場合占有できない。
+                if (_occupiedPositions.Contains(position))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         ///     指定された盤面位置一覧にブロックを配置できるか判定する。
         /// </summary>
         /// <param name="positions"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public bool CanPlace(IReadOnlyList<BoardCellPosition> positions)
+        public bool CanPlaceBlocks(IReadOnlyList<BoardCellPosition> positions)
         {
             if (positions == null)
             {
@@ -49,13 +107,13 @@ namespace ThreeDTetris.Model
                 BoardCellPosition position = positions[i];
 
                 // 置く位置が範囲外でないか。
-                if(!IsValidPosition(position))
+                if (!IsValidPosition(position))
                 {
                     return false;
                 }
 
                 // すでに固定済みブロックがある場合配置できない。
-                if(_occupiedPositions.Contains(position))
+                if (_occupiedPositions.Contains(position))
                 {
                     return false;
                 }
@@ -76,12 +134,12 @@ namespace ThreeDTetris.Model
         /// <param name="positions"> 配置する盤面位置一覧  </param>
         public void PlaceBlocks(IReadOnlyList<BoardCellPosition> positions)
         {
-            if(!CanPlace(positions))
+            if (!CanPlaceBlocks(positions))
             {
                 throw new InvalidOperationException("指定されたい位置にブロックを配置できません。");
             }
 
-            for(int i = 0; i < positions.Count; i++)
+            for (int i = 0; i < positions.Count; i++)
             {
                 _occupiedPositions.Add(positions[i]);
             }
