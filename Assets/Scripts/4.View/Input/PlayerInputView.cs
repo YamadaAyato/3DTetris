@@ -1,7 +1,8 @@
 using System;
-using ThreeDTetris.Model;
+using ThreeDTetris.Presenter;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
 
 namespace ThreeDTetris.View
 {
@@ -11,9 +12,14 @@ namespace ThreeDTetris.View
     [RequireComponent(typeof(PlayerInput))]
     public class PlayerInputView : MonoBehaviour
     {
-        private PlayerInput _playerInput;
+        [Inject]
+        public void Construct(GamePlayPresenter gamePlayPresenter)
+        {
+            _gamePlayPresenter = gamePlayPresenter ?? throw new ArgumentNullException(nameof(gamePlayPresenter));
+        }
 
-        public event Action<PlayerCommandEvent> OnPlayerCommandEvent;
+        private PlayerInput _playerInput;
+        private GamePlayPresenter _gamePlayPresenter;
 
         private void Awake()
         {
@@ -33,18 +39,12 @@ namespace ThreeDTetris.View
 
         private void ActionTriggered(InputAction.CallbackContext context)
         {
-            if (!InputActionMapNames.TryGetCommand(context.action.name, out PlayerCommand command))
+            if (context.phase != InputActionPhase.Performed)
             {
                 return;
             }
 
-            if (context.phase != InputActionPhase.Performed &&
-                context.phase != InputActionPhase.Canceled)
-            {
-                return;
-            }
-
-            OnPlayerCommandEvent?.Invoke(new PlayerCommandEvent(command, context.phase));
+            _gamePlayPresenter?.ExecuteInputAction(context.action.name);
         }
 
         private void ValidateActions()

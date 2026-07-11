@@ -1,11 +1,11 @@
-using ThreeDTetris.Model;
+using ThreeDTetris.Usecase;
 
-namespace ThreeDTetris.View
+namespace ThreeDTetris.Presenter
 {
     /// <summary>
     ///     Unity InputSystem の ActionMap名と Action名を管理し、ゲーム内操作へ変換する。
     /// </summary>
-    internal static class InputActionMapNames
+    public static class InputActionMapNames
     {
         public const string GAMEPLAY_MAP_NAME = "Gameplay";
 
