@@ -1,4 +1,4 @@
-namespace ThreeDTetris.Model
+namespace ThreeDTetris.Usecase
 {
     /// <summary>
     ///     プレイヤーが入力するコマンドの種類を表す列挙型。
