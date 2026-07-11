@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ThreeDTetris.Model
 {
@@ -11,6 +12,9 @@ namespace ThreeDTetris.Model
 
         /// <summary> 盤面の寸法。 </summary>
         public BoardDimensions Dimensions => _definition.Dimensions;
+
+        /// <summary> 盤面の面ID一覧。 </summary>
+        public IReadOnlyList<BoardFaceId> FaceIds => _definition.FaceIds;
 
         public BoardCellPosition GetLeft(BoardCellPosition position)
         {

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace ThreeDTetris.Model
 {
     /// <summary>
@@ -7,6 +9,9 @@ namespace ThreeDTetris.Model
     {
         /// <summary> 盤面の寸法。 </summary>
         BoardDimensions Dimensions { get; }
+
+        /// <summary> 盤面の面ID一覧。 </summary>
+        IReadOnlyList<BoardFaceId> FaceIds { get; }
 
         /// <summary>
         ///     指定位置の左隣の位置を取得する。
