@@ -93,6 +93,11 @@ namespace ThreeDTetris.Usecase
                     return DropCurrentPieceOneStep();
                 case PlayerCommand.HardDrop:
                     return HardDropCurrentPiece();
+                case PlayerCommand.RotateContainerLeft:
+                case PlayerCommand.RotateContainerRight:
+                case PlayerCommand.ResetCamera:
+                case PlayerCommand.Pause:
+                    return false;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(command), command, null);

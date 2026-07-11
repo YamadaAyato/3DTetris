@@ -48,7 +48,7 @@ namespace ThreeDTetris.Usecase
             int originY = _boardTopology.Dimensions.FaceHeight + spawnSettings.SpawnHeightOffset;
 
             // 新しいアクティブピースを作成する。
-            var candidatePiece = new ActivePiece(definition, spawnFaceId, spawnSettings.OriginX, originY, spawnSettings.PieceRotation);
+            var candidatePiece = new ActivePiece(definition, spawnFaceId, spawnSettings.OriginX, originY, spawnSettings.InitialRotation);
 
             // 配置可能かどうかを検証する
             if (!_placementValidator.CanOccupy(candidatePiece))

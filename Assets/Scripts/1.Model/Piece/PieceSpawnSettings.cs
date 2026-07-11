@@ -1,3 +1,5 @@
+using System;
+
 namespace ThreeDTetris.Model
 {
     /// <summary>
@@ -5,11 +7,16 @@ namespace ThreeDTetris.Model
     /// </summary>
     public readonly struct PieceSpawnSettings
     {
-        public PieceSpawnSettings(int originX, int spawnHeightOffset, PieceRotation pieceRotation)
+        public PieceSpawnSettings(int originX, int spawnHeightOffset, PieceRotation initialRotation)
         {
+            if (spawnHeightOffset < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(spawnHeightOffset), "スポーン位置のオフセットは0以上である必要があります。");
+            }
+
             OriginX = originX;
             SpawnHeightOffset = spawnHeightOffset;
-            PieceRotation = pieceRotation;
+            InitialRotation = initialRotation;
         }
 
         /// <summary> ピースの生成位置の基準となるX座標。 </summary>
@@ -19,6 +26,6 @@ namespace ThreeDTetris.Model
         public int SpawnHeightOffset { get; }
 
         /// <summary> ピースの生成時の回転状態。 </summary>
-        public PieceRotation PieceRotation { get; }
+        public PieceRotation InitialRotation { get; }
     }
 }
