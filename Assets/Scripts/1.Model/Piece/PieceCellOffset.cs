@@ -1,12 +1,11 @@
 using System;
-using UnityEngine;
 
 namespace ThreeDTetris.Model
 {
     /// <summary>
     ///     ミノのセルの相対座標を表す値オブジェクト。
     /// </summary>
-    public readonly struct PieceCellOffset :IEquatable<PieceCellOffset>
+    public readonly struct PieceCellOffset : IEquatable<PieceCellOffset>
     {
         public PieceCellOffset(int x, int y)
         {
