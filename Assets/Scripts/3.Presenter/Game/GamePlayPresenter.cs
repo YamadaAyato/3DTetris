@@ -16,16 +16,18 @@ namespace ThreeDTetris.Presenter
             IPieceDefinitionProvider pieceDefinitionProvider,
             RandomSpawnFaceProvider spawnFaceProvider,
             PieceSpawnSettings spawnSettings,
+            PieceFallSettings fallSettings,
             PiecePositionResolver positionResolver,
-            IActivePieceView activePieceView)
+            IGameBoardView gameBoardView)
         {
             _sessionModel = sessionModel ?? throw new ArgumentNullException(nameof(sessionModel));
             _gamePlayUsecase = gamePlayUsecase ?? throw new ArgumentNullException(nameof(gamePlayUsecase));
             _pieceDefinitionProvider = pieceDefinitionProvider ?? throw new ArgumentNullException(nameof(pieceDefinitionProvider));
             _spawnFaceProvider = spawnFaceProvider ?? throw new ArgumentNullException(nameof(spawnFaceProvider));
             _spawnSettings = spawnSettings;
+            _fallSettings = fallSettings;
             _positionResolver = positionResolver ?? throw new ArgumentNullException(nameof(positionResolver));
-            _activePieceView = activePieceView ?? throw new ArgumentNullException(nameof(activePieceView));
+            _gameBoardView = gameBoardView ?? throw new ArgumentNullException(nameof(gameBoardView));
         }
 
         /// <summary>
@@ -35,6 +37,28 @@ namespace ThreeDTetris.Presenter
         {
             TrySpawnNewPiece();
             RefreshActivePieceView();
+        }
+
+        /// <summary>
+        ///     ゲームの進行を更新する。
+        /// </summary>
+        /// <param name="deltaTime"> 経過時間（秒） </param>
+        public void Tick(float deltaTime)
+        {
+            if (_sessionModel.IsGameOver)
+            {
+                _gameBoardView.ClearActivePiece();
+                return;
+            }
+
+            _fallElapsedSeconds += deltaTime;
+
+            // 一定時間経過したら、ピースを1段落下させる
+            if (_fallElapsedSeconds >= _fallSettings.FallIntervalSeconds)
+            {
+                ExecutePlayerCommand(PlayerCommand.SoftDrop);
+                _fallElapsedSeconds = 0f;
+            }
         }
 
         /// <summary>
@@ -59,9 +83,11 @@ namespace ThreeDTetris.Presenter
         {
             if (_sessionModel.IsGameOver)
             {
+                _gameBoardView.ClearActivePiece();
                 return;
             }
 
+            // 現在のピースが存在しない場合は、新しいピースをスポーンする
             if (!_sessionModel.HasCurrentPiece)
             {
                 TrySpawnNewPiece();
@@ -69,11 +95,20 @@ namespace ThreeDTetris.Presenter
                 return;
             }
 
+            // コマンドを実行する前の現在のピースを保持する
+            ActivePiece commandTargetPiece = _sessionModel.CurrentPiece;
             _gamePlayUsecase.ExecuteCommand(command);
 
-            // ゲームプレイの結果として、現在のピースが消滅した場合は、新しいピースをスポーンする。
-            if (!_sessionModel.IsGameOver && !_sessionModel.HasCurrentPiece)
+            // コマンド実行後に現在のピースがロックされたかどうかを判定する
+            bool wasLocked = commandTargetPiece != null &&
+                !_sessionModel.IsGameOver &&
+                !_sessionModel.HasCurrentPiece;
+
+            // ピースがロックされた場合は、固定ブロックとして確定し、新しいピースをスポーンする
+            if (wasLocked)
             {
+                IReadOnlyList<BoardCellPosition> positions = _positionResolver.Resolve(commandTargetPiece);
+                _gameBoardView.CommitActivePieceAsFixedBlock(ConvertToViewDatas(positions));
                 TrySpawnNewPiece();
             }
 
@@ -85,8 +120,11 @@ namespace ThreeDTetris.Presenter
         private readonly IPieceDefinitionProvider _pieceDefinitionProvider;
         private readonly RandomSpawnFaceProvider _spawnFaceProvider;
         private readonly PieceSpawnSettings _spawnSettings;
+        private readonly PieceFallSettings _fallSettings;
         private readonly PiecePositionResolver _positionResolver;
-        private readonly IActivePieceView _activePieceView;
+        private readonly IGameBoardView _gameBoardView;
+
+        private float _fallElapsedSeconds = 0f;
 
         /// <summary>
         ///     新しいピースをスポーンする。
@@ -100,6 +138,7 @@ namespace ThreeDTetris.Presenter
                 return false;
             }
 
+            // 次のピースの定義を取得し、ランダムなスポーン面IDを選択して、ピースをスポーンする
             var definition = _pieceDefinitionProvider.GetNext();
             var spawnFaceId = _spawnFaceProvider.GetRandomSpawnFaceId();
             return _gamePlayUsecase.TrySpawnCurrentPiece(definition, spawnFaceId, _spawnSettings);
@@ -113,20 +152,29 @@ namespace ThreeDTetris.Presenter
             if (_sessionModel.IsGameOver ||
                 !_sessionModel.HasCurrentPiece)
             {
-                _activePieceView.Clear();
+                _gameBoardView.ClearActivePiece();
                 return;
             }
 
+            // 現在のピースの位置を取得し、ビューに描画する
             IReadOnlyList<BoardCellPosition> positions = _positionResolver.Resolve(_sessionModel.CurrentPiece);
+            _gameBoardView.RenderActivePiece(ConvertToViewDatas(positions));
+        }
 
-            BoardCellViewData[] cellViewDataArray = new BoardCellViewData[positions.Count];
-
+        /// <summary>
+        ///     ModelのBoardCellPositionのリストを、View用のBoardCellViewDataの配列に変換する。
+        /// </summary>
+        /// <param name="positions"> 変換するBoardCellPositionのリスト </param>
+        /// <returns> 変換後のBoardCellViewDataの配列 </returns>
+        private static BoardCellViewData[] ConvertToViewDatas(IReadOnlyList<BoardCellPosition> positions)
+        {
+            var viewDatas = new BoardCellViewData[positions.Count];
             for (int i = 0; i < positions.Count; i++)
             {
-                var pos = positions[i];
-                cellViewDataArray[i] = new BoardCellViewData(pos.FaceId.Value, pos.X, pos.Y);
+                BoardCellPosition pos = positions[i];
+                viewDatas[i] = new BoardCellViewData(pos.FaceId.Value, pos.X, pos.Y);
             }
-            _activePieceView.Render(cellViewDataArray);
+            return viewDatas;
         }
     }
 }

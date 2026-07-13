@@ -22,10 +22,17 @@ namespace ThreeDTetris.Container
         [SerializeField] private PieceDefinitionCatalogAsset _pieceDefinitionCatalogAsset;
         [SerializeField] private PieceSpawnSettingsAsset _pieceSpawnSettingsAsset;
 
+        [Header("Piece Fall Settings")]
+        [SerializeField] private float _pieceFallIntervalSeconds = 1.0f;
+
         [Header("Random")]
         [SerializeField] private bool _useRandomSeed = false;
         [SerializeField] private int _randomSeed = 0;
 
+        /// <summary>
+        ///     ライフタイムスコープの依存関係を登録する。
+        /// </summary>
+        /// <param name="builder"> 依存関係を登録するためのコンテナビルダー </param>
         protected override void Configure(IContainerBuilder builder)
         {
             if (_pieceDefinitionCatalogAsset == null)
@@ -49,6 +56,7 @@ namespace ThreeDTetris.Container
 
             PieceDefinitionCatalog definitionCatalog = _pieceDefinitionCatalogAsset.CreateCatalog();
             PieceSpawnSettings spawnSettings = _pieceSpawnSettingsAsset.CreateSettings();
+            PieceFallSettings fallSettings = new PieceFallSettings(_pieceFallIntervalSeconds);
 
             IPieceDefinitionProvider pieceDefinitionProvider = _useRandomSeed
                 ? new RandomBagPieceDefinitionProvider(definitionCatalog, _randomSeed)
@@ -66,6 +74,7 @@ namespace ThreeDTetris.Container
             builder.RegisterInstance<IPieceDefinitionProvider>(pieceDefinitionProvider);
             builder.RegisterInstance(spawnFaceProvider);
             builder.RegisterInstance(spawnSettings);
+            builder.RegisterInstance(fallSettings);
 
             builder.Register<PieceSpawnUsecase>(Lifetime.Singleton);
             builder.Register<PieceMoveUsecase>(Lifetime.Singleton);
@@ -74,7 +83,7 @@ namespace ThreeDTetris.Container
             builder.Register<PieceDropUsecase>(Lifetime.Singleton);
             builder.Register<GamePlayUsecase>(Lifetime.Singleton);
 
-            builder.RegisterComponentInHierarchy<ActivePieceView>().AsImplementedInterfaces();
+            builder.RegisterComponentInHierarchy<GameBoardView>().AsImplementedInterfaces();
             builder.Register<GamePlayPresenter>(Lifetime.Singleton);
 
             builder.RegisterComponentInHierarchy<GamePlayEntryView>();
