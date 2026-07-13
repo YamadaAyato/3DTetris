@@ -100,7 +100,7 @@ namespace ThreeDTetris.Usecase
                     return false;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(command), command, null);
+                    throw new ArgumentOutOfRangeException(nameof(command), command, "未対応のプレイヤーコマンドです。");
             }
         }
 
