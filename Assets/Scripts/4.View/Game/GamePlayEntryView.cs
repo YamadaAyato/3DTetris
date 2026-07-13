@@ -21,5 +21,10 @@ namespace ThreeDTetris.View
         {
             _gamePlayPresenter?.StartGame();
         }
+
+        private void Update()
+        {
+            _gamePlayPresenter?.Tick(Time.deltaTime);
+        }
     }
 }
