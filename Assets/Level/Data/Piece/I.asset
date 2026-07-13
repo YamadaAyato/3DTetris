@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9648a7469c13ca24aa31e01093e5716c, type: 3}
+  m_Name: I
+  m_EditorClassIdentifier: ThreeDTetris.Model::ThreeDTetris.Model.PieceDefinitionAsset
+  _id: I
+  _cellOffsets:
+  - _xOffset: -1
+    _yOffset: 0
+  - _xOffset: 0
+    _yOffset: 0
+  - _xOffset: 1
+    _yOffset: 0
+  - _xOffset: 2
+    _yOffset: 0
