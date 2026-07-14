@@ -14,9 +14,6 @@ namespace ThreeDTetris.Model
             _boardTopology = boardTopology ?? throw new ArgumentNullException(nameof(boardTopology));
         }
 
-        /// <summary> 盤面の寸法 </summary>
-        public BoardDimensions Dimensions => _boardTopology.Dimensions;
-
         /// <summary>
         ///     指定された盤面位置に固定済みブロックが存在するかを判定する。
         /// </summary>
@@ -46,6 +43,7 @@ namespace ThreeDTetris.Model
             for (int i = 0; i < positions.Count; i++)
             {
                 BoardCellPosition position = positions[i];
+                BoardDimensions dimensions = _boardTopology.GetDimensions(position.FaceId);
 
                 // 存在しない面IDや範囲外の座標の場合は占有できない。
                 if (!_boardTopology.ContainsFace(position.FaceId))
@@ -53,7 +51,7 @@ namespace ThreeDTetris.Model
                     return false;
                 }
 
-                if (position.X < 0 || position.X >= Dimensions.FaceWidth)
+                if (position.X < 0 || position.X >= dimensions.FaceWidth)
                 {
                     return false;
                 }
@@ -72,7 +70,7 @@ namespace ThreeDTetris.Model
 
                 // 盤面より上にあるセルは、固定済みブロックとの衝突判定を行わない。
                 // 上に積んでゲームオーバーの判定は別の箇所で行う。
-                if (position.Y >= Dimensions.FaceHeight)
+                if (position.Y >= dimensions.FaceHeight)
                 {
                     continue;
                 }
@@ -192,12 +190,14 @@ namespace ThreeDTetris.Model
                 return false;
             }
 
-            if (position.X < 0 || position.X >= Dimensions.FaceWidth)
+            BoardDimensions dimensions = _boardTopology.GetDimensions(position.FaceId);
+
+            if (position.X < 0 || position.X >= dimensions.FaceWidth)
             {
                 return false;
             }
 
-            if (position.Y < 0 || position.Y >= Dimensions.FaceHeight)
+            if (position.Y < 0 || position.Y >= dimensions.FaceHeight)
             {
                 return false;
             }
@@ -217,12 +217,14 @@ namespace ThreeDTetris.Model
                 throw new InvalidOperationException($"面ID {position.FaceId} は存在しません。");
             }
 
-            if (position.X < 0 || position.X >= Dimensions.FaceWidth)
+            BoardDimensions dimensions = _boardTopology.GetDimensions(position.FaceId);
+
+            if (position.X < 0 || position.X >= dimensions.FaceWidth)
             {
                 throw new ArgumentOutOfRangeException(nameof(position), $"X座標 {position.X} は盤面幅の範囲外です。");
             }
 
-            if (position.Y < 0 || position.Y >= Dimensions.FaceHeight)
+            if (position.Y < 0 || position.Y >= dimensions.FaceHeight)
             {
                 throw new ArgumentOutOfRangeException(nameof(position), $"Y座標 {position.Y} は盤面高さの範囲外です。");
             }

@@ -39,13 +39,15 @@ namespace ThreeDTetris.Usecase
                 throw new InvalidOperationException($"面ID {spawnFaceId} は存在しません。");
             }
 
+            BoardDimensions dimensions = _boardTopology.GetDimensions(spawnFaceId);
+
             if (spawnSettings.OriginX < 0 ||
-                spawnSettings.OriginX >= _boardTopology.Dimensions.FaceWidth)
+                spawnSettings.OriginX >= dimensions.FaceWidth)
             {
                 throw new InvalidOperationException($"X座標 {spawnSettings.OriginX} は面ID {spawnFaceId} の範囲外です。");
             }
 
-            int originY = _boardTopology.Dimensions.FaceHeight + spawnSettings.SpawnHeightOffset;
+            int originY = dimensions.FaceHeight + spawnSettings.SpawnHeightOffset;
 
             // 新しいアクティブピースを作成する。
             var candidatePiece = new ActivePiece(definition, spawnFaceId, spawnSettings.OriginX, originY, spawnSettings.InitialRotation);
