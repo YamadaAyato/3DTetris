@@ -18,7 +18,8 @@ namespace ThreeDTetris.Presenter
             PieceSpawnSettings spawnSettings,
             PieceFallSettings fallSettings,
             PiecePositionResolver positionResolver,
-            IGameBoardView gameBoardView)
+            IGameBoardView gameBoardView,
+            LineClearUsecase lineClearUsecase)
         {
             _sessionModel = sessionModel ?? throw new ArgumentNullException(nameof(sessionModel));
             _gamePlayUsecase = gamePlayUsecase ?? throw new ArgumentNullException(nameof(gamePlayUsecase));
@@ -28,6 +29,7 @@ namespace ThreeDTetris.Presenter
             _fallSettings = fallSettings;
             _positionResolver = positionResolver ?? throw new ArgumentNullException(nameof(positionResolver));
             _gameBoardView = gameBoardView ?? throw new ArgumentNullException(nameof(gameBoardView));
+            _lineClearUsecase = lineClearUsecase ?? throw new ArgumentNullException(nameof(lineClearUsecase));
         }
 
         /// <summary>
@@ -107,9 +109,12 @@ namespace ThreeDTetris.Presenter
             // ピースがロックされた場合は、固定ブロックとして確定し、新しいピースをスポーンする
             if (wasLocked)
             {
-                IReadOnlyList<BoardCellPosition> positions = _positionResolver.Resolve(commandTargetPiece);
-                _gameBoardView.CommitActivePieceAsFixedBlock(ConvertToViewDatas(positions));
+                CommitLockedPiece(commandTargetPiece);
+                ClearComletedLines();
                 TrySpawnNewPiece();
+
+                // 新しいピースがスポーンされたので、落下時間をリセットする
+                _fallElapsedSeconds = 0f; 
             }
 
             RefreshActivePieceView();
@@ -123,6 +128,7 @@ namespace ThreeDTetris.Presenter
         private readonly PieceFallSettings _fallSettings;
         private readonly PiecePositionResolver _positionResolver;
         private readonly IGameBoardView _gameBoardView;
+        private readonly LineClearUsecase _lineClearUsecase;
 
         private float _fallElapsedSeconds = 0f;
 
@@ -161,6 +167,23 @@ namespace ThreeDTetris.Presenter
             _gameBoardView.RenderActivePiece(ConvertToViewDatas(positions));
         }
 
+        private void CommitLockedPiece(ActivePiece LockedPiece)
+        {
+            IReadOnlyList<BoardCellPosition> positions = _positionResolver.Resolve(LockedPiece);
+            _gameBoardView.CommitActivePieceAsFixedBlock(ConvertToViewDatas(positions));
+        }
+
+        private void ClearComletedLines()
+        {
+            LineClearResult result = _lineClearUsecase.ClearCompletedLines();
+
+            if (result.HasRemovedBlocks)
+            {
+                _gameBoardView.RemoveFixedBlock(ConvertToViewDatas(result.RemovedPositions));
+                _gameBoardView.MoveFixedBlock(ConvertToMoveViewDatas(result.MovedBlocks));
+            }
+        }
+
         /// <summary>
         ///     ModelのBoardCellPositionのリストを、View用のBoardCellViewDataの配列に変換する。
         /// </summary>
@@ -175,6 +198,24 @@ namespace ThreeDTetris.Presenter
                 viewDatas[i] = new BoardCellViewData(pos.FaceId.Value, pos.X, pos.Y);
             }
             return viewDatas;
+        }
+
+        private static BoardCellMoveViewData[] ConvertToMoveViewDatas(IReadOnlyList<BoardBlockMove> moves)
+        {
+            var viewDatas = new BoardCellMoveViewData[moves.Count];
+
+            for (int i = 0; i < moves.Count; i++)
+            {
+                viewDatas[i] = new BoardCellMoveViewData(
+                    ConvertToViewData(moves[i].From), 
+                    ConvertToViewData(moves[i].To));
+            }
+            return viewDatas;
+        }
+
+        private static BoardCellViewData ConvertToViewData(BoardCellPosition position)
+        {
+            return new BoardCellViewData(position.FaceId.Value, position.X, position.Y);
         }
     }
 }

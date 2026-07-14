@@ -81,6 +81,7 @@ namespace ThreeDTetris.Container
             builder.Register<PieceLockUsecase>(Lifetime.Singleton);
             builder.Register<PieceRotationUsecase>(Lifetime.Singleton);
             builder.Register<PieceDropUsecase>(Lifetime.Singleton);
+            builder.Register<LineClearUsecase>(Lifetime.Singleton);
             builder.Register<GamePlayUsecase>(Lifetime.Singleton);
 
             builder.RegisterComponentInHierarchy<GameBoardView>().AsImplementedInterfaces();
