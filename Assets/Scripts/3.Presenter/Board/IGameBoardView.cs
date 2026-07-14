@@ -28,9 +28,8 @@ namespace ThreeDTetris.Presenter
         /// <summary>
         ///     固定ブロックを移動する。
         /// </summary>
-        /// <param name="from"> 移動元のブロックのセル情報 </param>
-        /// <param name="to"> 移動先のブロックのセル情報 </param>
-        void MoveFixedBlock(BoardCellViewData from, BoardCellViewData to);
+        /// <param name="moves"> 移動するブロックのセル情報のリスト </param>
+        void MoveFixedBlock(IReadOnlyList<BoardCellMoveViewData> moves);
 
         /// <summary>
         ///     操作中のピースをクリアする。

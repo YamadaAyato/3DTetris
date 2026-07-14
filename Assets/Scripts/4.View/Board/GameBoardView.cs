@@ -36,8 +36,8 @@ namespace ThreeDTetris.View
                 }
 
                 // アクティブブロックの親をアクティブブロックルートに設定し、位置を更新する
-                _activeBlocks[i].transform.SetParent(_activeBlockRoot, worldPositionStays: false);
-                _activeBlocks[i].SetPosition(ConvertToLocalPosition(cells[i]));
+                _activeBlocks[i].transform.SetParent(_activeBlockRoot, worldPositionStays: true);
+                _activeBlocks[i].SetPosition(_boardShapeViewLayout.ConvertToWorldPosition(cells[i]));
             }
         }
 
@@ -84,8 +84,8 @@ namespace ThreeDTetris.View
 
                 // 固定ブロックとして確定するために、アクティブブロックを有効化し、親を固定ブロックルートに設定し、位置を更新する。
                 blockView.gameObject.SetActive(true);
-                blockView.transform.SetParent(_fixedBlockRoot, worldPositionStays: false);
-                blockView.SetPosition(ConvertToLocalPosition(cellData));
+                blockView.transform.SetParent(_fixedBlockRoot, worldPositionStays: true);
+                blockView.SetPosition(_boardShapeViewLayout.ConvertToWorldPosition(cellData));
 
                 _fixedBlocks.Add(cellData, blockView);
             }
@@ -123,32 +123,57 @@ namespace ThreeDTetris.View
         /// <summary>
         ///     固定ブロックを移動する。
         /// </summary>
-        /// <param name="from"> 移動元のセル情報 </param>
-        /// <param name="to"> 移動先のセル情報 </param>
-        public void MoveFixedBlock(BoardCellViewData from, BoardCellViewData to)
+        /// <param name="moves"> 移動するブロックのセル情報のリスト </param>
+        public void MoveFixedBlock(IReadOnlyList<BoardCellMoveViewData> moves)
         {
-            if (!_fixedBlocks.TryGetValue(from, out BoardCellBlockView blockView))
+            if (moves == null || moves.Count == 0)
             {
                 return;
             }
 
-            // 移動元の固定ブロックを削除する。
-            if (_fixedBlocks.ContainsKey(to))
+            BoardCellBlockView[] movingBlocks = new BoardCellBlockView[moves.Count];
+
+            for(int i = 0;i < movingBlocks.Length;i++)
             {
-                Debug.LogWarning($"{to}移動先に既に固定ブロックがあります。", this);
-                Destroy(_fixedBlocks[to].gameObject);
-                _fixedBlocks.Remove(to);
+                BoardCellViewData from = moves[i].From;
+
+                if (!_fixedBlocks.TryGetValue(from , out BoardCellBlockView block))
+                {
+                    Debug.LogWarning($"[{nameof(GameBoardView)}] 移動元のブロックが見つかりません");
+                    continue;
+                }
+
+                movingBlocks[i] = block;
+                _fixedBlocks.Remove(from);
             }
 
-            // 移動元の固定ブロックを移動先に設定し、位置を更新する。
-            _fixedBlocks.Add(to, blockView);
-            blockView.SetPosition(ConvertToLocalPosition(to));
+            for(int i = 0; i < movingBlocks.Length; i++)
+            {
+                BoardCellBlockView block = movingBlocks[i];
+
+                if(block == null)
+                {
+                    continue;
+                }
+
+                BoardCellViewData to = moves[i].To;
+
+                if(_fixedBlocks.ContainsKey(to))
+                {
+                    Debug.LogWarning($"[{nameof(GameBoardView)}] 移動先のブロックがすでに存在します");
+                    Destroy(_fixedBlocks[to].gameObject);
+                    _fixedBlocks.Remove(to);
+                }
+
+                _fixedBlocks.Add(to, block);
+                block.SetPosition(_boardShapeViewLayout.ConvertToWorldPosition(to));
+            }
         }
 
-        [SerializeField] private BoardCellBlockView _blockPrefab;
-        [SerializeField] private Transform _activeBlockRoot;
-        [SerializeField] private Transform _fixedBlockRoot;
-        [SerializeField] private float _cellSize = 1f;
+        [SerializeField,Tooltip("ブロックのプレハブ")] private BoardCellBlockView _blockPrefab;
+        [SerializeField,Tooltip("アクティブブロックのルート")] private Transform _activeBlockRoot;
+        [SerializeField,Tooltip("固定ブロックのルート")] private Transform _fixedBlockRoot;
+        [SerializeField,Tooltip("盤面の形状ビューのレイアウト")] private BoardShapeViewLayout _boardShapeViewLayout;
 
         private readonly List<BoardCellBlockView> _activeBlocks = new();
         private readonly Dictionary<BoardCellViewData, BoardCellBlockView> _fixedBlocks = new();
@@ -164,22 +189,6 @@ namespace ThreeDTetris.View
                 BoardCellBlockView block = Instantiate(_blockPrefab, _activeBlockRoot);
                 _activeBlocks.Add(block);
             }
-        }
-
-        /// <summary>
-        ///     BoardCellViewDataの座標をローカル座標に変換する。
-        /// </summary>
-        /// <param name="cellViewData"> 変換するセル情報 </param>
-        /// <returns> ローカル座標 </returns>
-        private Vector3 ConvertToLocalPosition(BoardCellViewData cellViewData)
-        {
-            float faceOffsetX = cellViewData.FaceId * 10f * _cellSize;
-
-            return new Vector3(
-                faceOffsetX + cellViewData.X * _cellSize,
-                cellViewData.Y * _cellSize,
-                0f
-            );
         }
     }
 }
