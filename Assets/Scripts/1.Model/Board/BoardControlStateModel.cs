@@ -3,9 +3,9 @@ namespace ThreeDTetris.Model
     /// <summary>
     ///     盤面の制御状態を表すモデル。
     /// </summary>
-    public class BoardControllStateModel
+    public class BoardControlStateModel
     {
-        public BoardControllStateModel(BoardFaceId currentFaceId)
+        public BoardControlStateModel(BoardFaceId currentFaceId)
         {
             CurrentFaceId = currentFaceId;
         }
