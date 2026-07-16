@@ -19,7 +19,11 @@ namespace ThreeDTetris.Presenter
             PieceFallSettings fallSettings,
             PiecePositionResolver positionResolver,
             IGameBoardView gameBoardView,
-            LineClearUsecase lineClearUsecase)
+            LineClearUsecase lineClearUsecase,
+            PieceFaceSwitchUsecase faceSwitchUsecase,
+            BoardFaceSelectionUsecase boardFaceSelectionUsecase,
+            IBoardCameraView boardCameraView,
+            BoardControlStateModel boardControlStateModel)
         {
             _sessionModel = sessionModel ?? throw new ArgumentNullException(nameof(sessionModel));
             _gamePlayUsecase = gamePlayUsecase ?? throw new ArgumentNullException(nameof(gamePlayUsecase));
@@ -30,6 +34,10 @@ namespace ThreeDTetris.Presenter
             _positionResolver = positionResolver ?? throw new ArgumentNullException(nameof(positionResolver));
             _gameBoardView = gameBoardView ?? throw new ArgumentNullException(nameof(gameBoardView));
             _lineClearUsecase = lineClearUsecase ?? throw new ArgumentNullException(nameof(lineClearUsecase));
+            _pieceFaceSwitchUsecase = faceSwitchUsecase ?? throw new ArgumentNullException(nameof(faceSwitchUsecase));
+            _boardFaceSelectionUsecase = boardFaceSelectionUsecase ?? throw new ArgumentNullException(nameof(boardFaceSelectionUsecase));
+            _boardCameraView = boardCameraView ?? throw new ArgumentNullException(nameof(boardCameraView));
+            _boardControlStateModel = boardControlStateModel ?? throw new ArgumentNullException(nameof(boardControlStateModel));
         }
 
         /// <summary>
@@ -89,6 +97,13 @@ namespace ThreeDTetris.Presenter
                 return;
             }
 
+            // コンテナの回転コマンドの場合は、ピースの面を切り替える。
+            if (IsFaceChangeCommand(command))
+            {
+                SwitchFace(command);
+                return;
+            }
+
             // 現在のピースが存在しない場合は、新しいピースをスポーンする
             if (!_sessionModel.HasCurrentPiece)
             {
@@ -114,7 +129,7 @@ namespace ThreeDTetris.Presenter
                 TrySpawnNewPiece();
 
                 // 新しいピースがスポーンされたので、落下時間をリセットする
-                _fallElapsedSeconds = 0f; 
+                _fallElapsedSeconds = 0f;
             }
 
             RefreshActivePieceView();
@@ -129,6 +144,10 @@ namespace ThreeDTetris.Presenter
         private readonly PiecePositionResolver _positionResolver;
         private readonly IGameBoardView _gameBoardView;
         private readonly LineClearUsecase _lineClearUsecase;
+        private readonly PieceFaceSwitchUsecase _pieceFaceSwitchUsecase;
+        private readonly BoardFaceSelectionUsecase _boardFaceSelectionUsecase;
+        private readonly IBoardCameraView _boardCameraView;
+        private readonly BoardControlStateModel _boardControlStateModel;
 
         private float _fallElapsedSeconds = 0f;
 
@@ -147,7 +166,18 @@ namespace ThreeDTetris.Presenter
             // 次のピースの定義を取得し、ランダムなスポーン面IDを選択して、ピースをスポーンする
             var definition = _pieceDefinitionProvider.GetNext();
             var spawnFaceId = _spawnFaceProvider.GetRandomSpawnFaceId();
-            return _gamePlayUsecase.TrySpawnCurrentPiece(definition, spawnFaceId, _spawnSettings);
+            bool spawned = _gamePlayUsecase.TrySpawnCurrentPiece(definition, spawnFaceId, _spawnSettings);
+
+            if (!spawned)
+            {
+                _gameBoardView.ClearActivePiece();
+                return false;
+            }
+
+            _boardFaceSelectionUsecase.SetCurrentFace(spawnFaceId);
+            _boardCameraView.FocusFace(spawnFaceId.Value);
+
+            return true;
         }
 
         /// <summary>
@@ -184,6 +214,30 @@ namespace ThreeDTetris.Presenter
             }
         }
 
+        private void SwitchFace(PlayerCommand command)
+        {
+            BoardFaceId nextFaceId = command == PlayerCommand.RotateContainerRight
+                ? _boardFaceSelectionUsecase.RotationRight()
+                : _boardFaceSelectionUsecase.RotationLeft();
+
+            if (_sessionModel.HasCurrentPiece)
+            {
+                bool switched = _pieceFaceSwitchUsecase.TrySwitchFace(_sessionModel.CurrentPiece, nextFaceId);
+
+                if (!switched)
+                {
+                    _sessionModel.SetGameOver();
+                    _gameBoardView.ClearActivePiece();
+                    return;
+                }
+            }
+
+            _boardCameraView.FocusFace(nextFaceId.Value);
+            RefreshActivePieceView();
+
+            _fallElapsedSeconds = 0f;
+        }
+
         /// <summary>
         ///     ModelのBoardCellPositionのリストを、View用のBoardCellViewDataの配列に変換する。
         /// </summary>
@@ -207,7 +261,7 @@ namespace ThreeDTetris.Presenter
             for (int i = 0; i < moves.Count; i++)
             {
                 viewDatas[i] = new BoardCellMoveViewData(
-                    ConvertToViewData(moves[i].From), 
+                    ConvertToViewData(moves[i].From),
                     ConvertToViewData(moves[i].To));
             }
             return viewDatas;
@@ -216,6 +270,12 @@ namespace ThreeDTetris.Presenter
         private static BoardCellViewData ConvertToViewData(BoardCellPosition position)
         {
             return new BoardCellViewData(position.FaceId.Value, position.X, position.Y);
+        }
+
+        private static bool IsFaceChangeCommand(PlayerCommand command)
+        {
+            return command == PlayerCommand.RotateContainerRight ||
+                   command == PlayerCommand.RotateContainerLeft;
         }
     }
 }

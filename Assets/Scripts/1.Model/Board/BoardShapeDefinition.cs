@@ -38,6 +38,8 @@ namespace ThreeDTetris.Model
             DimentionsByFaceId = new Dictionary<BoardFaceId, BoardDimensions>(dimentionsByFaceId);
             HorizontalNeighborsByFaceId = new Dictionary<BoardFaceId, BoardHorizontalNeighbors>(horizontalNeighborsByFaceId);
             InitialFaceId = initialFaceId;
+
+            Validate();
         }
 
         /// <summary> 盤面の面IDのリスト。 /// </summary>

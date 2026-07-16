@@ -43,7 +43,7 @@ namespace ThreeDTetris.View
         [SerializeField, Tooltip("カメラのリグ")] private Transform _cameraRig;
         [SerializeField, Tooltip("各操作面に対応するアンカーのリスト")] private List<BoardCameraFaceAnchor> _faceAnchors = new();
 
-        [Header("Transition Settings")]
+        [Header("Transition設定")]
         [SerializeField, Tooltip("トランジションの時間")] private float _transitionDuration = 1.0f;
         [SerializeField, Tooltip("トランジションのイージング")] private Ease _transitionEase = Ease.Linear;
         [SerializeField, Tooltip("最初のフォーカス時にスナップするかどうか")] private bool _snapOnFirstFocus = true;

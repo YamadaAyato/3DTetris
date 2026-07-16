@@ -16,16 +16,27 @@ namespace ThreeDTetris.View
         /// <param name="x"> セルのX座標 </param>
         /// <param name="y"> セルのY座標 </param>
         /// <param name="cellSize"> セルのサイズ </param>
-        /// <returns> セルのワールド座標 </returns>
-        public Vector3 ToWorldPosition(int x, int y,float cellSize)
+        /// <param name="blockThickness"> ブロックの厚さ </param>
+        /// <returns> セルのワールド座標と回転 </returns>
+        public BoardCellPose ToWorldPosition(int x, int y, float cellSize, float blockThickness)
         {
-            return transform.position + 
-                _cellRight * x * cellSize +
-                _cellUp * y * cellSize;
+            Vector3 right = _cellRight.normalized;
+            Vector3 up = _cellUp.normalized;
+            Vector3 forward = _cellForward.normalized;
+
+            Vector3 position =
+                transform.position +
+                right * (x * cellSize) +
+                up * (y * cellSize);
+
+            Quaternion rotation = Quaternion.LookRotation(-forward, up);
+
+            return new BoardCellPose(position, rotation);
         }
 
         [SerializeField] private int _faceId;
         [SerializeField] private Vector3 _cellRight = Vector3.right;
         [SerializeField] private Vector3 _cellUp = Vector3.up;
+        [SerializeField] private Vector3 _cellForward = Vector3.forward;
     }
 }

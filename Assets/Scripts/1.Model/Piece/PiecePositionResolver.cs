@@ -29,20 +29,24 @@ namespace ThreeDTetris.Model
             IReadOnlyList<PieceCellOffset> cellOffsets = activePiece.Definition.Cells;
             BoardCellPosition[] positions = new BoardCellPosition[cellOffsets.Count];
 
+            BoardCellPosition originPosition = new(
+                activePiece.OriginFaceId,
+                activePiece.OriginX,
+                activePiece.OriginY);
+
             // 相対セルを盤面セルへ変換した結果を格納していく・
             for (int i = 0; i < cellOffsets.Count; i++)
             {
                 // 現在の回転状態に合わせてミノ内の相対位置を回転。
                 PieceCellOffset rotatedOffset = RotateOffset(cellOffsets[i], activePiece.Rotation);
 
-                // Y方向のずれを反映
-                BoardCellPosition originPosition = new(
-                    activePiece.OriginFaceId,
-                    activePiece.OriginX,
-                    activePiece.OriginY + rotatedOffset.Y);
+                BoardCellPosition horizontalPosition = MoveHorizontal(originPosition, rotatedOffset.X);
 
                 // X方向のズレは面マタギがあるのでBoardTopology経由で移動。
-                positions[i] = MoveHorizontal(originPosition, rotatedOffset.X);
+                positions[i] = new BoardCellPosition(
+                    horizontalPosition.FaceId,
+                    horizontalPosition.X,
+                    horizontalPosition.Y + rotatedOffset.Y);
             }
 
             return positions;

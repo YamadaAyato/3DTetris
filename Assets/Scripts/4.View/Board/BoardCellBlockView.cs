@@ -11,9 +11,11 @@ namespace ThreeDTetris.View
         ///     ブロックの位置を設定する。
         /// </summary>
         /// <param name="position"> 設定する位置 </param>
-        public void SetPosition(Vector3 position)
+        /// <param name="rotation"> 設定する回転 </param>
+        public void SetPosition(Vector3 position, Quaternion rotation)
         {
-            transform.localPosition = position;
+            transform.position = position;
+            transform.rotation = rotation;
         }
     }
 }

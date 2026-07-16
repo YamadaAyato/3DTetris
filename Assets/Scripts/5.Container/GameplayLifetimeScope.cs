@@ -15,8 +15,20 @@ namespace ThreeDTetris.Container
     public class GameplayLifetimeScope : LifetimeScope
     {
         [Header("Board")]
-        [SerializeField] private int _faceWidth = 8;
+        [SerializeField] private BoardShapeType _boardShapeType = BoardShapeType.Cube;
         [SerializeField] private int _faceHeight = 20;
+
+        [Header("Cube")]
+        [SerializeField] private int _faceWidth = 8;
+
+        [Header("RectangularPrism")]
+        [SerializeField] private int _rectFrontBackWidth = 8;
+        [SerializeField] private int _rectSideWidth = 4;
+
+        [Header("TrianglePrism")]
+        [SerializeField] private int _triFirstWidth = 8;
+        [SerializeField] private int _triSecondWidth = 6;
+        [SerializeField] private int _triThirdWidth = 4;
 
         [Header("Piece")]
         [SerializeField] private PieceDefinitionCatalogAsset _pieceDefinitionCatalogAsset;
@@ -28,6 +40,13 @@ namespace ThreeDTetris.Container
         [Header("Random")]
         [SerializeField] private bool _useRandomSeed = false;
         [SerializeField] private int _randomSeed = 0;
+
+        private enum BoardShapeType
+        {
+            Cube,
+            RectangularPrism,
+            TrianglePrism,
+        }
 
         /// <summary>
         ///     ライフタイムスコープの依存関係を登録する。
@@ -45,13 +64,15 @@ namespace ThreeDTetris.Container
                 throw new InvalidOperationException("ピーススポーン設定アセットが設定されていません。");
             }
 
-            BoardDimensions boardDimensions = new BoardDimensions(_faceWidth, _faceHeight);
-            IBoardTopology boardTopology = DefaultCubeBoardTopologyFactory.Create(boardDimensions);
+
+            BoardShapeDefinition boardShapeDefinition = CreateBoardShapeDefinition();
+            IBoardTopology boardTopology = new DataDrivenBoardTopology(boardShapeDefinition);
 
             BoardModel boardModel = new BoardModel(boardTopology);
             GameSessionModel gameSessionModel = new();
+            BoardControlStateModel boardControlStateModel = new(boardTopology.InitialFaceId);
 
-            PiecePositionResolver piecePositionResolver = new PiecePositionResolver(boardTopology);
+            PiecePositionResolver piecePositionResolver = new(boardTopology);
             PiecePlacementValidator placementValidator = new PiecePlacementValidator(boardModel, piecePositionResolver);
 
             PieceDefinitionCatalog definitionCatalog = _pieceDefinitionCatalogAsset.CreateCatalog();
@@ -69,6 +90,7 @@ namespace ThreeDTetris.Container
             builder.RegisterInstance<IBoardTopology>(boardTopology);
             builder.RegisterInstance(boardModel);
             builder.RegisterInstance(gameSessionModel);
+            builder.RegisterInstance(boardControlStateModel);
             builder.RegisterInstance(piecePositionResolver);
             builder.RegisterInstance(placementValidator);
             builder.RegisterInstance<IPieceDefinitionProvider>(pieceDefinitionProvider);
@@ -80,15 +102,42 @@ namespace ThreeDTetris.Container
             builder.Register<PieceMoveUsecase>(Lifetime.Singleton);
             builder.Register<PieceLockUsecase>(Lifetime.Singleton);
             builder.Register<PieceRotationUsecase>(Lifetime.Singleton);
+            builder.Register<PieceFaceSwitchUsecase>(Lifetime.Singleton);
+            builder.Register<BoardFaceSelectionUsecase>(Lifetime.Singleton);
             builder.Register<PieceDropUsecase>(Lifetime.Singleton);
             builder.Register<LineClearUsecase>(Lifetime.Singleton);
             builder.Register<GamePlayUsecase>(Lifetime.Singleton);
 
             builder.RegisterComponentInHierarchy<GameBoardView>().AsImplementedInterfaces();
+            builder.RegisterComponentInHierarchy<BoardCameraView>().AsImplementedInterfaces();
+
             builder.Register<GamePlayPresenter>(Lifetime.Singleton);
 
             builder.RegisterComponentInHierarchy<GamePlayEntryView>();
             builder.RegisterComponentInHierarchy<PlayerInputView>();
+        }
+
+        private BoardShapeDefinition CreateBoardShapeDefinition()
+        {
+            return _boardShapeType switch
+            {
+                BoardShapeType.Cube => PrismBoardShapeFactory.CreateCube(
+                    _faceWidth,
+                    _faceHeight),
+
+                BoardShapeType.RectangularPrism => PrismBoardShapeFactory.CreateRectangularPrism(
+                    _rectFrontBackWidth,
+                    _rectSideWidth,
+                    _faceHeight),
+
+                BoardShapeType.TrianglePrism => PrismBoardShapeFactory.CreateTriangularPrism(
+                    _triFirstWidth,
+                    _triSecondWidth,
+                    _triThirdWidth,
+                    _faceHeight),
+
+                _ => throw new InvalidOperationException($"不明なボード形状タイプ: {_boardShapeType}"),
+            };
         }
     }
 }

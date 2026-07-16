@@ -37,7 +37,8 @@ namespace ThreeDTetris.View
 
                 // アクティブブロックの親をアクティブブロックルートに設定し、位置を更新する
                 _activeBlocks[i].transform.SetParent(_activeBlockRoot, worldPositionStays: true);
-                _activeBlocks[i].SetPosition(_boardShapeViewLayout.ConvertToWorldPosition(cells[i]));
+                BoardCellPose pose = _boardShapeViewLayout.ConvertToWorldPosition(cells[i]);
+                _activeBlocks[i].SetPosition(pose.Position, pose.Rotation);
             }
         }
 
@@ -85,7 +86,8 @@ namespace ThreeDTetris.View
                 // 固定ブロックとして確定するために、アクティブブロックを有効化し、親を固定ブロックルートに設定し、位置を更新する。
                 blockView.gameObject.SetActive(true);
                 blockView.transform.SetParent(_fixedBlockRoot, worldPositionStays: true);
-                blockView.SetPosition(_boardShapeViewLayout.ConvertToWorldPosition(cellData));
+                BoardCellPose pose = _boardShapeViewLayout.ConvertToWorldPosition(cellData);
+                blockView.SetPosition(pose.Position, pose.Rotation);
 
                 _fixedBlocks.Add(cellData, blockView);
             }
@@ -133,11 +135,11 @@ namespace ThreeDTetris.View
 
             BoardCellBlockView[] movingBlocks = new BoardCellBlockView[moves.Count];
 
-            for(int i = 0;i < movingBlocks.Length;i++)
+            for (int i = 0; i < movingBlocks.Length; i++)
             {
                 BoardCellViewData from = moves[i].From;
 
-                if (!_fixedBlocks.TryGetValue(from , out BoardCellBlockView block))
+                if (!_fixedBlocks.TryGetValue(from, out BoardCellBlockView block))
                 {
                     Debug.LogWarning($"[{nameof(GameBoardView)}] 移動元のブロックが見つかりません");
                     continue;
@@ -147,18 +149,18 @@ namespace ThreeDTetris.View
                 _fixedBlocks.Remove(from);
             }
 
-            for(int i = 0; i < movingBlocks.Length; i++)
+            for (int i = 0; i < movingBlocks.Length; i++)
             {
                 BoardCellBlockView block = movingBlocks[i];
 
-                if(block == null)
+                if (block == null)
                 {
                     continue;
                 }
 
                 BoardCellViewData to = moves[i].To;
 
-                if(_fixedBlocks.ContainsKey(to))
+                if (_fixedBlocks.ContainsKey(to))
                 {
                     Debug.LogWarning($"[{nameof(GameBoardView)}] 移動先のブロックがすでに存在します");
                     Destroy(_fixedBlocks[to].gameObject);
@@ -166,14 +168,15 @@ namespace ThreeDTetris.View
                 }
 
                 _fixedBlocks.Add(to, block);
-                block.SetPosition(_boardShapeViewLayout.ConvertToWorldPosition(to));
+                BoardCellPose pose = _boardShapeViewLayout.ConvertToWorldPosition(to);
+                block.SetPosition(pose.Position, pose.Rotation);
             }
         }
 
-        [SerializeField,Tooltip("ブロックのプレハブ")] private BoardCellBlockView _blockPrefab;
-        [SerializeField,Tooltip("アクティブブロックのルート")] private Transform _activeBlockRoot;
-        [SerializeField,Tooltip("固定ブロックのルート")] private Transform _fixedBlockRoot;
-        [SerializeField,Tooltip("盤面の形状ビューのレイアウト")] private BoardShapeViewLayout _boardShapeViewLayout;
+        [SerializeField, Tooltip("ブロックのプレハブ")] private BoardCellBlockView _blockPrefab;
+        [SerializeField, Tooltip("アクティブブロックのルート")] private Transform _activeBlockRoot;
+        [SerializeField, Tooltip("固定ブロックのルート")] private Transform _fixedBlockRoot;
+        [SerializeField, Tooltip("盤面の形状ビューのレイアウト")] private BoardShapeViewLayout _boardShapeViewLayout;
 
         private readonly List<BoardCellBlockView> _activeBlocks = new();
         private readonly Dictionary<BoardCellViewData, BoardCellBlockView> _fixedBlocks = new();
