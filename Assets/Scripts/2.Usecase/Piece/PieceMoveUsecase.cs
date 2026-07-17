@@ -109,7 +109,7 @@ namespace ThreeDTetris.Usecase
             // -1 は左隣面の右端セルとして許可する。
             // faceWidth は右隣面の左端セルとして許可する。
             // それより外側は、隣接面へ深く入り込むため許可しない。
-            return minCellX >= -1 &&
+            return minCellX >= 0 &&
                    maxCellX <= faceWidth;
         }
 
