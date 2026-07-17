@@ -1,0 +1,17 @@
+{
+    "name": "ThreeDTetris.Presenter",
+    "rootNamespace": "ThreeDTetris.Presenter",
+    "references": [
+        "GUID:82c3bf3f2b3fe3744a71987493c8154a",
+        "GUID:e657f092113320641b36c4b679f9e03b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

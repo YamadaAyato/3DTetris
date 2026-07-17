@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 736660622382eff4e90351872630c746, type: 3}
+  m_Name: 0.PieceDefinitionCatalog
+  m_EditorClassIdentifier: ThreeDTetris.Model::ThreeDTetris.Model.PieceDefinitionCatalogAsset
+  _pieceDefinitions:
+  - {fileID: 11400000, guid: 1f1e022e44301d04a8e6fba94edd2ad9, type: 2}
+  - {fileID: 11400000, guid: b92e85059cdbad243bd8790674b4b79e, type: 2}
+  - {fileID: 11400000, guid: 1c316b8ee5019ec44b13d67f225fbaa0, type: 2}
+  - {fileID: 11400000, guid: 58f253a840326a04a900b93497f64b57, type: 2}
+  - {fileID: 11400000, guid: 3910489357dfccc43a219ddd529e9eee, type: 2}
+  - {fileID: 11400000, guid: ad635edc52c1eab43bc9a0a2419c6b8c, type: 2}
