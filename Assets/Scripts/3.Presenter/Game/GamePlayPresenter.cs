@@ -23,7 +23,8 @@ namespace ThreeDTetris.Presenter
             PieceFaceSwitchUsecase faceSwitchUsecase,
             BoardFaceSelectionUsecase boardFaceSelectionUsecase,
             IBoardCameraView boardCameraView,
-            BoardControlStateModel boardControlStateModel)
+            BoardControlStateModel boardControlStateModel,
+            IBoardTopology boardTopology)
         {
             _sessionModel = sessionModel ?? throw new ArgumentNullException(nameof(sessionModel));
             _gamePlayUsecase = gamePlayUsecase ?? throw new ArgumentNullException(nameof(gamePlayUsecase));
@@ -38,6 +39,7 @@ namespace ThreeDTetris.Presenter
             _boardFaceSelectionUsecase = boardFaceSelectionUsecase ?? throw new ArgumentNullException(nameof(boardFaceSelectionUsecase));
             _boardCameraView = boardCameraView ?? throw new ArgumentNullException(nameof(boardCameraView));
             _boardControlStateModel = boardControlStateModel ?? throw new ArgumentNullException(nameof(boardControlStateModel));
+            _boardTopology = boardTopology ?? throw new ArgumentNullException(nameof(boardTopology));
         }
 
         /// <summary>
@@ -98,7 +100,7 @@ namespace ThreeDTetris.Presenter
             }
 
             // コンテナの回転コマンドの場合は、ピースの面を切り替える。
-            if (IsFaceChangeCommand(command))
+            if (IsFaceSwichCommand(command))
             {
                 SwitchFace(command);
                 return;
@@ -124,8 +126,8 @@ namespace ThreeDTetris.Presenter
             // ピースがロックされた場合は、固定ブロックとして確定し、新しいピースをスポーンする
             if (wasLocked)
             {
-                CommitLockedPiece(commandTargetPiece);
-                ClearComletedLines();
+                CommitPiece(commandTargetPiece);
+                ClearCompletedLines();
                 TrySpawnNewPiece();
 
                 // 新しいピースがスポーンされたので、落下時間をリセットする
@@ -148,6 +150,7 @@ namespace ThreeDTetris.Presenter
         private readonly BoardFaceSelectionUsecase _boardFaceSelectionUsecase;
         private readonly IBoardCameraView _boardCameraView;
         private readonly BoardControlStateModel _boardControlStateModel;
+        private readonly IBoardTopology _boardTopology;
 
         private float _fallElapsedSeconds = 0f;
 
@@ -166,7 +169,7 @@ namespace ThreeDTetris.Presenter
             // 次のピースの定義を取得し、ランダムなスポーン面IDを選択して、ピースをスポーンする
             var definition = _pieceDefinitionProvider.GetNext();
             var spawnFaceId = _spawnFaceProvider.GetRandomSpawnFaceId();
-            bool spawned = _gamePlayUsecase.TrySpawnCurrentPiece(definition, spawnFaceId, _spawnSettings);
+            bool spawned = _gamePlayUsecase.TrySpawnPiece(definition, spawnFaceId, _spawnSettings);
 
             if (!spawned)
             {
@@ -194,32 +197,46 @@ namespace ThreeDTetris.Presenter
 
             // 現在のピースの位置を取得し、ビューに描画する
             IReadOnlyList<BoardCellPosition> positions = _positionResolver.Resolve(_sessionModel.CurrentPiece);
-            _gameBoardView.RenderActivePiece(ConvertToViewDatas(positions));
+            _gameBoardView.RenderActivePiece(ToViewCells(positions));
         }
 
-        private void CommitLockedPiece(ActivePiece LockedPiece)
+        /// <summary>
+        ///     ピースを固定ブロックとして確定する。
+        /// </summary>
+        /// <param name="lockedPiece"> 固定するピース </param>
+        private void CommitPiece(ActivePiece lockedPiece)
         {
-            IReadOnlyList<BoardCellPosition> positions = _positionResolver.Resolve(LockedPiece);
-            _gameBoardView.CommitActivePieceAsFixedBlock(ConvertToViewDatas(positions));
+            IReadOnlyList<BoardCellPosition> positions = _positionResolver.Resolve(lockedPiece);
+            _gameBoardView.CommitActivePieceAsFixedBlock(ToViewCells(positions));
         }
 
-        private void ClearComletedLines()
+        /// <summary>
+        ///     完成したラインをクリアする。
+        /// </summary>
+        private void ClearCompletedLines()
         {
             LineClearResult result = _lineClearUsecase.ClearCompletedLines();
 
+            // 完成したラインが存在する場合は、固定ブロックのビューを更新する
             if (result.HasRemovedBlocks)
             {
-                _gameBoardView.RemoveFixedBlock(ConvertToViewDatas(result.RemovedPositions));
-                _gameBoardView.MoveFixedBlock(ConvertToMoveViewDatas(result.MovedBlocks));
+                _gameBoardView.RemoveFixedBlock(ToViewCells(result.RemovedPositions));
+                _gameBoardView.MoveFixedBlock(ToViewMoves(result.MovedBlocks));
             }
         }
 
+        /// <summary>
+        ///     コンテナの回転コマンドに応じて、現在の操作面を切り替える。
+        /// </summary>
+        /// <param name="command"> 実行するプレイヤーコマンド </param>
         private void SwitchFace(PlayerCommand command)
         {
+            // 現在の操作面を切り替える
             BoardFaceId nextFaceId = command == PlayerCommand.RotateContainerRight
                 ? _boardFaceSelectionUsecase.RotationRight()
                 : _boardFaceSelectionUsecase.RotationLeft();
 
+            // 現在のピースが存在する場合は、ピースの面を切り替える
             if (_sessionModel.HasCurrentPiece)
             {
                 bool switched = _pieceFaceSwitchUsecase.TrySwitchFace(_sessionModel.CurrentPiece, nextFaceId);
@@ -232,6 +249,7 @@ namespace ThreeDTetris.Presenter
                 }
             }
 
+            // カメラを切り替えた面にフォーカスする
             _boardCameraView.FocusFace(nextFaceId.Value);
             RefreshActivePieceView();
 
@@ -243,7 +261,7 @@ namespace ThreeDTetris.Presenter
         /// </summary>
         /// <param name="positions"> 変換するBoardCellPositionのリスト </param>
         /// <returns> 変換後のBoardCellViewDataの配列 </returns>
-        private static BoardCellViewData[] ConvertToViewDatas(IReadOnlyList<BoardCellPosition> positions)
+        private static BoardCellViewData[] ToViewCells(IReadOnlyList<BoardCellPosition> positions)
         {
             var viewDatas = new BoardCellViewData[positions.Count];
             for (int i = 0; i < positions.Count; i++)
@@ -254,25 +272,40 @@ namespace ThreeDTetris.Presenter
             return viewDatas;
         }
 
-        private static BoardCellMoveViewData[] ConvertToMoveViewDatas(IReadOnlyList<BoardBlockMove> moves)
+        /// <summary>
+        ///     ModelのBoardBlockMoveのリストを、View用のBoardCellMoveViewDataの配列に変換する。
+        /// </summary>
+        /// <param name="moves"> 変換するBoardBlockMoveのリスト </param>
+        /// <returns> 変換後のBoardCellMoveViewDataの配列 </returns>
+        private static BoardCellMoveViewData[] ToViewMoves(IReadOnlyList<BoardBlockMove> moves)
         {
             var viewDatas = new BoardCellMoveViewData[moves.Count];
 
             for (int i = 0; i < moves.Count; i++)
             {
                 viewDatas[i] = new BoardCellMoveViewData(
-                    ConvertToViewData(moves[i].From),
-                    ConvertToViewData(moves[i].To));
+                    ToViewCell(moves[i].From),
+                    ToViewCell(moves[i].To));
             }
             return viewDatas;
         }
 
-        private static BoardCellViewData ConvertToViewData(BoardCellPosition position)
+        /// <summary>
+        ///     ModelのBoardCellPositionを、View用のBoardCellViewDataに変換する。
+        /// </summary>
+        /// <param name="position"> 変換するBoardCellPosition </param>
+        /// <returns> 変換後のBoardCellViewData </returns>
+        private static BoardCellViewData ToViewCell(BoardCellPosition position)
         {
             return new BoardCellViewData(position.FaceId.Value, position.X, position.Y);
         }
 
-        private static bool IsFaceChangeCommand(PlayerCommand command)
+        /// <summary>
+        ///     プレイヤーコマンドが、コンテナの回転コマンドかどうかを判定する。
+        /// </summary>
+        /// <param name="command"> 判定するプレイヤーコマンド </param>
+        /// <returns> コンテナの回転コマンドであればtrue、それ以外はfalse </returns>
+        private static bool IsFaceSwichCommand(PlayerCommand command)
         {
             return command == PlayerCommand.RotateContainerRight ||
                    command == PlayerCommand.RotateContainerLeft;

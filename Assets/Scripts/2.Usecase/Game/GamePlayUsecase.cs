@@ -4,7 +4,7 @@ using ThreeDTetris.Model;
 namespace ThreeDTetris.Usecase
 {
     /// <summary>
-    ///    ゲームプレイのユースケースを管理するクラス。
+    ///     ゲームプレイのユースケースを管理するクラス。
     /// </summary>
     public class GamePlayUsecase
     {
@@ -31,25 +31,25 @@ namespace ThreeDTetris.Usecase
         /// <param name="spawnFaceId"> ピースの生成面ID </param>
         /// <param name="spawnSettings"> ピースの生成設定 </param>
         /// <returns> ピースの生成に成功した場合はtrue、失敗した場合はfalse </returns>
-        public bool TrySpawnCurrentPiece(
+        public bool TrySpawnPiece(
             PieceDefinition definition,
             BoardFaceId spawnFaceId,
             PieceSpawnSettings spawnSettings)
         {
-            // ゲームオーバー状態の場合は、新しいピースを生成できない。
+            // ゲームオーバー状態の場合は、新しいピースを生成できない
             if (_gameSessionModel.IsGameOver)
             {
                 return false;
             }
 
-            // すでに操作中のピースが存在する場合は、新しいピースを生成できない。
+            // すでに操作中のピースが存在する場合は、新しいピースを生成できない
             if (_gameSessionModel.HasCurrentPiece)
             {
                 return false;
             }
 
-            // 新しいピースを生成し、配置可能かどうかを検証する。
-            // 配置できない場合はゲームオーバーとする。
+            // 新しいピースを生成し、配置可能かどうかを検証する
+            // 配置できない場合はゲームオーバーとする
             if (!_pieceSpawnUsecase.TrySpawn(
                 definition,
                 spawnFaceId,
@@ -90,9 +90,9 @@ namespace ThreeDTetris.Usecase
                 case PlayerCommand.Rotate:
                     return _pieceRotationUsecase.Rotate(_gameSessionModel.CurrentPiece);
                 case PlayerCommand.SoftDrop:
-                    return DropCurrentPieceOneStep();
+                    return SoftDrop();
                 case PlayerCommand.HardDrop:
-                    return HardDropCurrentPiece();
+                    return HardDrop();
                 case PlayerCommand.RotateContainerLeft:
                 case PlayerCommand.RotateContainerRight:
                 case PlayerCommand.ResetCamera:
@@ -112,44 +112,44 @@ namespace ThreeDTetris.Usecase
         private readonly PieceDropUsecase _pieceDropUsecase;
 
         /// <summary>
-        ///    現在のピースを1ステップ落下させる。
+        ///     現在のピースを1ステップ落下させる。
         /// </summary>
         /// <returns> ピースの落下に成功した場合はtrue、失敗した場合はfalse </returns>
-        private bool DropCurrentPieceOneStep()
+        private bool SoftDrop()
         {
             ActivePiece currentPiece = _gameSessionModel.CurrentPiece;
 
-            // ピースを1ステップ落下させる。落下できない場合はピースをロックする。
+            // ピースを1ステップ落下させる。落下できない場合はピースをロックする
             if (_pieceDropUsecase.DropOneStep(currentPiece))
             {
                 return true;
             }
 
-            return LockCurrentPiece();
+            return LockPiece();
         }
 
         /// <summary>
         ///     現在のピースをハードドロップさせる。
         /// </summary>
         /// <returns> ピースのハードドロップに成功した場合はtrue、失敗した場合はfalse </returns>
-        private bool HardDropCurrentPiece()
+        private bool HardDrop()
         {
             ActivePiece currentPiece = _gameSessionModel.CurrentPiece;
 
-            // ピースをハードドロップさせる。ハードドロップ後はピースをロックする。
+            // ピースをハードドロップさせる。ハードドロップ後はピースをロックする
             _pieceDropUsecase.HardDrop(currentPiece);
-            return LockCurrentPiece();
+            return LockPiece();
         }
 
         /// <summary>
-        ///    現在のピースをロックする。
+        ///     現在のピースをロックする。
         /// </summary>
         /// <returns> ピースのロックに成功した場合はtrue、失敗した場合はfalse </returns>
-        private bool LockCurrentPiece()
+        private bool LockPiece()
         {
             ActivePiece currentPiece = _gameSessionModel.CurrentPiece;
 
-            // ピースをロックする。ロックできない場合はゲームオーバーとする。
+            // ピースをロックする。ロックできない場合はゲームオーバーとする
             if (!_pieceLockUsecase.Lock(currentPiece))
             {
                 _gameSessionModel.SetGameOver();
